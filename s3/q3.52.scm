@@ -1,3 +1,5 @@
+(load "./s3.5.1-stream.scm")
+
 (define sum 0)
 ; sum: 0
 ; memo-procなしsum: 0
