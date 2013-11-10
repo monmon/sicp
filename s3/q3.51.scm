@@ -1,3 +1,5 @@
+(load "./s3.5.1-stream.scm")
+
 (define (show x)
   (display-line x)
   x)

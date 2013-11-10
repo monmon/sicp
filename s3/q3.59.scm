@@ -1,3 +1,5 @@
+(load "./q3.51.scm")
+
 ; a.
 ; 単純にintegersが分母にくればよいので
 (define (integrate-series s)
