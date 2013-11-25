@@ -28,9 +28,22 @@
 
 (define (stream-car stream) (car stream))
 
+(define (force delayed-object)
+  (delayed-object))
 (define (stream-cdr stream) (force (cdr stream)))
 
-(define (cons-stream a b) (cons a (delay b)))
+(define (memo-proc proc)
+  (let ((already-run? #f) (result #f))
+    (lambda ()
+      (if (not already-run?)
+        (begin (set! result (proc))
+               (set! already-run? #t)
+               result)
+        result))))
+(define-macro (delay exp) `(memo-proc (lambda () ,exp)))
+;(define (cons-stream a b) (cons a (delay b)))
+(define-macro (cons-stream a b)
+  `(cons ,a (delay ,b)))
 
 (define (stream-enumerate-interval low high)
   (if (> low high)

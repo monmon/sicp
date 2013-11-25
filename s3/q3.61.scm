@@ -3,6 +3,10 @@
 ; 符号を変えるためにはすべての項に-1を掛ければ良い
 ; また、Xを求める手続きをinvert-unit-seriesとするのでXは(invert-unit-series s)と書ける
 
+(load "./q3.60.scm")
+
 (define (invert-unit-series s)
   (cons-stream 1
                (scale-stream (mul-series (stream-cdr s) (invert-unit-series s)) -1)))
+
+(print "take: " (take (mul-series sine-series (invert-unit-series sine-series)) 10))
