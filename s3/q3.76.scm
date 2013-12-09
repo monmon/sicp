@@ -1,6 +1,7 @@
 ; q3.75で平均値使ってノイズを減らしたstreamを見たくても見れないよね 問題
 
 (load "./q3.74.scm")
+(load "./q3.75.scm")
 ;-------------------------------------------------------------------------------------
 (define ones (cons-stream 1 ones)) ; p.194
 (define integers (cons-stream 1 (add-streams ones integers))) ; p.194
@@ -21,16 +22,15 @@
 
 ; make-zero-crossings の改良は "smoothの内部が変わっても抽出部分は変更しなくても良いようにする" という話なので、
 ; q3.74の make-zero-crossings の input-stream が smooth 後の stream になるようにすれば良い
-(define (improved-make-zero-crossings input-stream)
-  (define (make-zero-crossings-using-smoothed-stream smoothed-stream last-value)
-    (cons-stream
-      (sign-change-detector (stream-car smoothed-stream) last-value)
-      (make-zero-crossings-using-smoothed-stream (stream-cdr smoothed-stream)
-                                                 (stream-car smoothed-stream))))
-  (make-zero-crossings-using-smoothed-stream (smooth input-stream) 0))
+(define (make-zero-crossings input-stream last-value)
+  (cons-stream
+    (sign-change-detector (stream-car input-stream) last-value)
+    (make-zero-crossings (stream-cdr input-stream)
+                         (stream-car input-stream))))
 
+(define (improved-make-zero-crossings input-stream . smoother)
+    (make-zero-crossings ((if (null? smoother) smooth (car smoother)) input-stream) 0))
 
-(load "./q3.75.scm")
 (test-start "q3.76")
 (define sense-data (make-dummy-stream (reverse '(1  2  1.5  1  0.5  -0.1  -2  -3  -2  -0.5  0.2  3  4)) ones))
-(test "make vs. improved" (take (make-zero-crossings sense-data 0 0) 13) (lambda () (take (improved-make-zero-crossings sense-data) 13)))
+(test "make vs. improved" '(0 0 0 0 0 0 -1 0 0 0 0 1 0) (lambda () (take (improved-make-zero-crossings sense-data) 13)))

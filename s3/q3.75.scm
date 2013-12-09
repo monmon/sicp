@@ -11,7 +11,7 @@
                  (make-zero-crossings (stream-cdr input-stream)
                                       avpt))))
 
-; 改良版を作るので以下に着目
+; 修正版を作るので以下に着目
 ; - 「検出データの各値を直前の値と平均」なので直前の値を渡すようにする
 ; - また、sign-change-detector に渡す値は "直前の平均値（直前とその前の平均）" と "現在の平均値（現在の値と直前の平均）" であるべきなので直前の平均値も必要
 (define (make-zero-crossings input-stream last-value last-avpt)
