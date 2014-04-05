@@ -24,6 +24,7 @@
         ((let? exp) (analyze (let->combination exp)))
         ((begin? exp) (analyze-sequence (begin-actions exp)))
         ((cond? exp) (analyze (cond->if exp)))
+        ((unless? exp) (analyze (unless->if exp)))            ; q4.26
         ((application? exp) (analyze-application exp))
         (else
          (error "Unknown expression type -- ANALYZE" exp))))
@@ -216,6 +217,24 @@
        (make-if (cond-predicate first)
                 (sequence->exp (cond-actions first))
                 (expand-clauses rest))))))
+
+; q4.26
+; unless
+; cond->if と同じように作ればよい & make-if のconsequent と alternative を逆にすればよい
+(define (unless? exp) (tagged-list? exp 'unless))
+(define (unless-clauses exp) (cdr exp))
+(define (unless-predicate clause) (car clause))
+(define (unless-consequent clause) (cadr clause))
+(define (unless-alternative clauses)
+  (let ((alternative-list (cddr clauses)))
+    (if (null? alternative-list)
+      'false                          ; else節なし
+      (car alternative-list))))
+(define (unless->if exp)
+  (let ((clauses (unless-clauses exp)))
+    (make-if (unless-predicate clauses)
+             (unless-alternative clauses)
+             (unless-consequent clauses))))
 
 ; procedure
 (define primitive-procedures
