@@ -31,6 +31,25 @@
 ; user   0.580
 ; sys    0.000
 
+
+; （例2）引数を多く使えばいいのでこんな感じでいける
+(define (fn n)
+  (+ n n n n n n n n))
+
+;;; L-Eval input:
+(fn (fn (fn (fn (fn (fn (fn 1)))))))
+;(time (actual-value input the-global-environment))
+; real   4.990
+; user   4.980
+; sys    0.000
+
+;;; L-Eval input:
+(fn (fn (fn (fn (fn (fn (fn 1)))))))
+;(time (actual-value input the-global-environment))
+; real   0.000
+; user   0.000
+; sys    0.000
+
 ;=========================================================================================================
 
 ; メモ化なし
