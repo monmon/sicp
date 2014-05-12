@@ -324,6 +324,8 @@
        (list '* *)
        (list '/ /)
        (list '= =)
+       (list '< <)
+       (list '> >)
  ))
 (define (primitive-procedure? proc)
  (tagged-list? proc 'primitive))
