@@ -327,6 +327,8 @@
        (list '= =)
        (list '< <)
        (list '> >)
+       (list 'equal? equal?)
+       (list 'abs abs)
  ))
 (define (primitive-procedure? proc)
  (tagged-list? proc 'primitive))
