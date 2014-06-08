@@ -31,6 +31,7 @@
         ((unless? exp) (analyze (unless->if exp)))            ; q4.26
         ((amb? exp) (analyze-amb exp))                        ; p.255
         ((ramb? exp) (analyze-ramb exp))                      ; q4.50
+        ((permanent-set!? exp) (analyze-permanent-set! exp))  ; q4.51
         ((application? exp) (analyze-application exp))
         (else
          (error "Unknown expression type -- ANALYZE" exp))))
@@ -64,6 +65,20 @@
                                                  old-value
                                                  env)
                             (fail2)))))
+             fail))))
+
+; q4.51
+; 失敗継続は, 失敗を継続する前に, 変数を昔の値に戻す. つまり成功する代入は, 後の失敗を横取りする失敗継続を準備する; 失敗が何を呼び出しても, fail2はその代りにこの手続きを呼び出し, 実際にfail2を呼び出す前に, 代入を戻す.
+; の代入を戻さないバージョンを作れば良い
+; 単純にold-valueの処理部分を消す
+(define (analyze-permanent-set! exp)
+  (let ((var (assignment-variable exp))
+        (vproc (analyze (assignment-value exp))))
+    (lambda (env succeed fail)
+      (vproc env
+             (lambda (val fail2)
+                 (set-variable-value! var val env)
+                 (succeed 'ok fail2))
              fail))))
 
 (define (analyze-definition exp)
@@ -348,6 +363,9 @@
         (create-list (cons chosen created-list) (remove (lambda (e) (eq? e chosen)) source)))))
   (create-list '() list))
 
+; q4.51
+(define (permanent-set!? exp) (tagged-list? exp 'permanent-set!))
+
 ; procedure
 (define primitive-procedures
  (list (list 'car car)
@@ -366,6 +384,7 @@
        (list '= =)
        (list '< <)
        (list '> >)
+       (list 'eq? eq?)
        (list 'equal? equal?)
        (list 'abs abs)
        (list 'random-integer random-integer)
