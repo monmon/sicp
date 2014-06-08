@@ -30,6 +30,7 @@
         ((cond? exp) (analyze (cond->if exp)))
         ((unless? exp) (analyze (unless->if exp)))            ; q4.26
         ((amb? exp) (analyze-amb exp))                        ; p.255
+        ((ramb? exp) (analyze-ramb exp))                      ; q4.50
         ((application? exp) (analyze-application exp))
         (else
          (error "Unknown expression type -- ANALYZE" exp))))
@@ -127,6 +128,19 @@
 
 (define (analyze-amb exp)
   (let ((cprocs (map analyze (amb-choices exp))))
+    (lambda (env succeed fail)
+      (define (try-next choices)
+        (if (null? choices)
+          (fail)
+          ((car choices) env
+                         succeed
+                         (lambda ()
+                           (try-next (cdr choices))))))
+      (try-next cprocs))))
+
+; q4.50
+(define (analyze-ramb exp)
+  (let ((cprocs (map analyze (ramb-choices exp))))
     (lambda (env succeed fail)
       (define (try-next choices)
         (if (null? choices)
@@ -309,6 +323,30 @@
 (define (amb? exp) (tagged-list? exp 'amb))
 (define (amb-choices exp) (cdr exp))
 
+; q4.50
+; ambの場合、たとえば
+; exp が (amb 1 2 3)
+; だと(cdr exp)で(1 2 3)が返るようになっている
+; そのリストに対してその後の処理が左から処理される
+;
+; ので、
+; (3 1 2)
+; のようにシャッフルした状態で返せば良さそう
+; (use gauche.sequence) の shuffle にしてみたけどparseを呼ぶと応答がないので自分でshuffleする
+; => でも上手くいかない
+; printすると動く（bufferされてるとか？）
+(define (ramb? exp) (tagged-list? exp 'ramb))
+(define (ramb-choices exp) (shuffle (cdr exp)))
+(define (ramb-choices exp)
+  ;(print (shuffle (cdr exp)))
+  (shuffle (cdr exp)))
+(define (shuffle list)
+  (define (create-list created-list source)
+    (if (null? source)
+      created-list
+      (let ((chosen (list-ref source (random-integer (length source)))))
+        (create-list (cons chosen created-list) (remove (lambda (e) (eq? e chosen)) source)))))
+  (create-list '() list))
 
 ; procedure
 (define primitive-procedures
