@@ -32,6 +32,7 @@
         ((amb? exp) (analyze-amb exp))                        ; p.255
         ((ramb? exp) (analyze-ramb exp))                      ; q4.50
         ((permanent-set!? exp) (analyze-permanent-set! exp))  ; q4.51
+        ((if-fail? exp) (analyze-if-fail exp))                ; q4.52
         ((application? exp) (analyze-application exp))
         (else
          (error "Unknown expression type -- ANALYZE" exp))))
@@ -103,6 +104,19 @@
                  (aproc env succeed fail2)))
              fail))))
 
+; q4.52
+; analyze-if に倣うが、
+; 第一の式が成功した場合にはそのまま戻り、
+; 失敗した場合には第二の式を処理するようにする
+(define (analyze-if-fail exp)
+  (let ((first-proc (analyze (cadr exp)))
+        (second-proc (analyze (caddr exp))))
+    (lambda (env succeed fail)
+      (first-proc env
+                  succeed ; 成功継続でそのまま戻る
+                  (lambda ()
+                    (second-proc env succeed fail)))))) ; 失敗の場合には第一の式に関係なく第二の式を処理
+
 (define (analyze-lambda exp)
   (let ((vars (lambda-parameters exp))
         (bproc (analyze-sequence (lambda-body exp))))
@@ -165,6 +179,7 @@
                          (lambda ()
                            (try-next (cdr choices))))))
       (try-next cprocs))))
+
 
 (define (get-args aprocs env succeed fail)
   (if (null? aprocs)
@@ -366,6 +381,9 @@
 ; q4.51
 (define (permanent-set!? exp) (tagged-list? exp 'permanent-set!))
 
+; q4.52
+(define (if-fail? exp) (tagged-list? exp 'if-fail))
+
 ; procedure
 (define primitive-procedures
  (list (list 'car car)
@@ -384,6 +402,7 @@
        (list '= =)
        (list '< <)
        (list '> >)
+       (list 'remainder remainder)
        (list 'eq? eq?)
        (list 'equal? equal?)
        (list 'abs abs)
