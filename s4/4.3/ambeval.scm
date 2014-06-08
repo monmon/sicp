@@ -1,4 +1,5 @@
 ; originally from https://gist.github.com/mururu/a27918cb98cbbe213dca
+(use srfi-27)
 (define false #f)
 (define true #t)
 
@@ -329,6 +330,7 @@
        (list '> >)
        (list 'equal? equal?)
        (list 'abs abs)
+       (list 'random-integer random-integer)
  ))
 (define (primitive-procedure? proc)
  (tagged-list? proc 'primitive))
