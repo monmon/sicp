@@ -370,6 +370,7 @@
 (define (ramb-choices exp)
   ;(print (shuffle (cdr exp)))
   (shuffle (cdr exp)))
+(random-source-randomize! default-random-source)
 (define (shuffle list)
   (define (create-list created-list source)
     (if (null? source)
