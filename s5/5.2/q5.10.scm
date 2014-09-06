@@ -23,8 +23,17 @@
          (make-fetch-stack-list inst machine stack pc))
         ((eq? (car inst) 'perform)
          (make-perform inst machine labels ops pc))
+        ((eq? (car inst) 'inc)
+         (make-inc inst machine pc))
         (else (error "Unknown instruction type -- ASSEMBLE"
                      inst))))
+
+(define (make-inc inst machine pc)
+  (let ((reg (get-register machine
+                           (stack-inst-reg-name inst))))
+    (lambda ()
+      (set-contents! reg (+ (get-contents reg) 1))
+      (advance-pc pc))))
 
 (define (make-fetch-stack-list inst machine stack pc)
   (let ((reg (get-register machine
@@ -72,7 +81,9 @@
        (save x)
        (assign x (const 50))
        (save x)
+       (inc x)
        (fetch-stack-list stack-list))))
 
 (start fetch-stack-list-machine)
 (print (get-register-contents fetch-stack-list-machine 'stack-list)) ;=> (50 10 5 1)
+(print (get-register-contents fetch-stack-list-machine 'x)) ;=> 51
