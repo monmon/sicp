@@ -19,9 +19,9 @@
   (let ((op (lookup-prim (operation-exp-op exp) operations))
         (aprocs
           (map (lambda (e)
-                 (if (label-exp? e)
-                   (error "cannot operate -- ASSEMBLE" e)
-                   (make-primitive-exp e machine labels)))
+                 (if (or (register-exp? e) (constant-exp? e))
+                   (make-primitive-exp e machine labels)
+                   (error "cannot operate -- ASSEMBLE" e)))
                (operation-exp-operands exp))))
     (lambda ()
       (apply op (map (lambda (p) (p)) aprocs)))))
@@ -31,5 +31,5 @@
     '(val)
     (list (list '+ +))
     '(start
-       (assign val (op +) (label start) (const 2)))))
-;=> cannot operate -- ASSEMBLE (label start)
+       (assign val (op +) (goto start) (const 2)))))
+;=> cannot operate -- ASSEMBLE (goto start)
